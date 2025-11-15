@@ -1,8 +1,9 @@
 export interface Note {
-  id: string;
+  _id: string;
   title: string;
   content: string;
+  tag: string;
+  owner: string;
   createdAt: string;
   updatedAt: string;
-  tag: string;
 }
