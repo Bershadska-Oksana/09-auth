@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useNoteStore } from "@/lib/store/noteStore";
+import { createNote } from "@/lib/api/notes";
 
 interface NotesProps {
   filter: string;

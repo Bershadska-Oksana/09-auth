@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { api } from "../../api";
+import { api } from "@/lib/api/api";
 import { cookies } from "next/headers";
 function logErrorResponse(data: any) {
   console.error("API Error:", data);

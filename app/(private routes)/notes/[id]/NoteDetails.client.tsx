@@ -3,6 +3,7 @@
 import React from "react";
 import css from "./NoteDetails.module.css";
 import { useNoteStore } from "@/lib/store/noteStore";
+import { createNote } from "@/lib/api/notes";
 
 interface NoteDetailsProps {
   noteId: string;
