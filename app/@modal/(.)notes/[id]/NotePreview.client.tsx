@@ -2,12 +2,11 @@
 
 import { useParams } from "next/navigation";
 import css from "./NotePreview.module.css";
-import { useNoteStore } from "@/lib/store/noteStore";
-import { fetchNoteById } from "@/lib/api/notes"; // <- тут імпорт виправлений
+import { useQuery } from "@tanstack/react-query";
 import Modal from "@/components/Modal/Modal";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { fetchNoteById } from "@/lib/api/clientApi";
 
 const NotePreview = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,7 +22,7 @@ const NotePreview = () => {
     error,
   } = useQuery({
     queryKey: ["note", id],
-    queryFn: () => fetchNoteById(id),
+    queryFn: () => fetchNoteById(id as string),
     refetchOnMount: false,
   });
 
