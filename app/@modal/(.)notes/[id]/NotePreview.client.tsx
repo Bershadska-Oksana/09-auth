@@ -3,11 +3,11 @@
 import { useParams } from "next/navigation";
 import css from "./NotePreview.module.css";
 import { useNoteStore } from "@/lib/store/noteStore";
-import { createNote } from "@/lib/api/notes";
-import { useQuery } from "@tanstack/react-query";
+import { fetchNoteById } from "@/lib/api/notes"; // <- тут імпорт виправлений
 import Modal from "@/components/Modal/Modal";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 const NotePreview = () => {
   const { id } = useParams<{ id: string }>();
@@ -38,7 +38,6 @@ const NotePreview = () => {
     : "—";
 
   if (isLoading) return <p>Loading, please wait...</p>;
-
   if (error || !note) return <p>Something went wrong.</p>;
 
   return (
