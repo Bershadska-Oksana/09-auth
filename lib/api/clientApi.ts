@@ -1,62 +1,23 @@
-import { api } from "./api";
-import { User } from "@/types/user";
-import { Note } from "@/types/note";
+// lib/api/clientApi.ts
+import axios from "axios";
 
-export const register = async (email: string, password: string) => {
-  const res = await api.post("/auth/register", { email, password });
-  return res.data as User;
-};
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000/api",
+  withCredentials: true,
+});
 
-export const login = async (email: string, password: string) => {
-  const res = await api.post("/auth/login", { email, password });
-  return res.data as User;
-};
+/* NOTES */
+export async function fetchNotes() {
+  const { data } = await api.get("/notes");
+  return data;
+}
 
-export const logout = async () => {
-  const res = await api.post("/auth/logout");
-  return res.data;
-};
+export async function fetchNoteById(id: string) {
+  const { data } = await api.get(`/notes/${id}`);
+  return data;
+}
 
-export const checkSession = async () => {
-  const res = await api.get("/auth/session");
-  return res.data as User | null;
-};
-
-export const getMe = async () => {
-  const res = await api.get("/users/me");
-  return res.data as User;
-};
-
-export const updateMe = async (data: Partial<User>) => {
-  const res = await api.patch("/users/me", data);
-  return res.data as User;
-};
-
-// Notes
-export const fetchNotes = async (params?: {
-  search?: string;
-  page?: number;
-  tag?: string;
-}) => {
-  const res = await api.get("/notes", { params });
-  return res.data as Note[];
-};
-
-export const fetchNoteById = async (id: string) => {
-  const res = await api.get(`/notes/${id}`);
-  return res.data as Note;
-};
-
-export const createNote = async (payload: {
-  title: string;
-  content: string;
-  tag: string;
-}) => {
-  const res = await api.post("/notes", payload);
-  return res.data as Note;
-};
-
-export const deleteNote = async (id: string) => {
-  const res = await api.delete(`/notes/${id}`);
-  return res.data;
-};
+export async function createNote(payload: { title: string; content: string }) {
+  const { data } = await api.post("/notes", payload);
+  return data;
+}

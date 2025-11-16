@@ -1,2 +1,2 @@
-export * from "./api";
-export * from "./notes";
+export * from "./clientApi";
+export * from "./serverApi";

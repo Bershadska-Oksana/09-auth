@@ -1,4 +1,4 @@
-import { serverFetchNotes } from "@/lib/api/serverApi";
+import { serverGetNotes } from "@/lib/api/serverApi";
 
 export default async function FilteredNotesPage({
   params,

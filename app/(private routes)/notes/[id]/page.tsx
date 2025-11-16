@@ -1,5 +1,4 @@
-// app/(private routes)/notes/[id]/page.tsx
-import { serverFetchNoteById } from "@/lib/api/serverApi";
+import { serverGetNoteById } from "@/lib/api/serverApi";
 
 export default async function NotePage({ params }: { params: { id: string } }) {
   const note = await serverFetchNoteById(params.id);
