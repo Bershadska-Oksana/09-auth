@@ -3,7 +3,9 @@ import { api } from "../../api";
 import { cookies } from "next/headers";
 import { parse } from "cookie";
 import { isAxiosError } from "axios";
-import { logErrorResponse } from "../../_utils/utils";
+function logErrorResponse(data: any) {
+  console.error("API Error:", data);
+}
 
 export async function POST(req: NextRequest) {
   try {

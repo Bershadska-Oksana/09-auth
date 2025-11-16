@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { getMe, updateMe } from "@/lib/api/clientApi";
 import { useRouter } from "next/navigation";
-import css from "./EditProfilePage.module.css";
 
 export default function EditProfilePage() {
   const [username, setUsername] = useState("");
@@ -19,7 +18,7 @@ export default function EditProfilePage() {
     })();
   }, []);
 
-  const handleSave = async (e: React.FormEvent) => {
+  const onSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await updateMe({ username });
@@ -30,41 +29,22 @@ export default function EditProfilePage() {
   };
 
   return (
-    <main className={css.mainContent}>
-      <div className={css.profileCard}>
-        <h1 className={css.formTitle}>Edit Profile</h1>
-        <img
-          src="https://ac.goit.global/default-avatar.png"
-          alt="User Avatar"
-          width={120}
-          height={120}
-          className={css.avatar}
-        />
-        <form className={css.profileInfo} onSubmit={handleSave}>
-          <div className={css.usernameWrapper}>
-            <label htmlFor="username">Username:</label>
-            <input
-              id="username"
-              className={css.input}
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </div>
-          <p>Email: {email}</p>
-          <div className={css.actions}>
-            <button type="submit" className={css.saveButton}>
-              Save
-            </button>
-            <button
-              type="button"
-              className={css.cancelButton}
-              onClick={() => router.back()}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
+    <main style={{ padding: 20 }}>
+      <h1>Edit Profile</h1>
+      <form onSubmit={onSave}>
+        <div>
+          <label>Username</label>
+          <input
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </div>
+        <p>Email: {email}</p>
+        <button type="submit">Save</button>
+        <button type="button" onClick={() => router.back()}>
+          Cancel
+        </button>
+      </form>
     </main>
   );
 }

@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { api } from "../../api";
 import { cookies } from "next/headers";
-import { logErrorResponse } from "../../_utils/utils";
+function logErrorResponse(data: any) {
+  console.error("API Error:", data);
+}
 import { isAxiosError } from "axios";
 
 type Props = {
