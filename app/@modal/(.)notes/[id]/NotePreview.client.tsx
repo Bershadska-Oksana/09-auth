@@ -2,7 +2,8 @@
 
 import { useParams } from "next/navigation";
 import css from "./NotePreview.module.css";
-import { useNoteStore, createNote } from "@/lib/api/api";
+import { useNoteStore } from "@/lib/store/noteStore";
+import { createNote } from "@/lib/api/notes";
 import { useQuery } from "@tanstack/react-query";
 import Modal from "@/components/Modal/Modal";
 import { useRouter } from "next/navigation";
