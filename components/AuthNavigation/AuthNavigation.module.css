@@ -1,0 +1,16 @@
+.navigationItem {
+  list-style: none;
+  margin-left: 12px;
+}
+.navigationLink {
+  text-decoration: none;
+}
+.userEmail {
+  margin-right: 8px;
+}
+.logoutButton {
+  background: none;
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+  cursor: pointer;
+}

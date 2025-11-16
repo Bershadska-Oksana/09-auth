@@ -1,20 +1,15 @@
-import React from "react";
-import css from "./profile.module.css";
+import css from "./ProfilePage.module.css";
 import Image from "next/image";
 import { serverGetMe } from "@/lib/api/serverApi";
+import { headers } from "next/headers";
 
-export const metadata = {
-  title: "Profile — NoteHub",
-  description: "User profile",
-};
-
-type Props = { searchParams?: any };
+export const metadata = { title: "Profile — NoteHub" };
 
 export default async function ProfilePage() {
-  
+  const cookieHeader = headers().get("cookie") || undefined;
   try {
-    
-    const me = await serverGetMe(); 
+    const me = await serverGetMe(cookieHeader);
+    return (
       <main className={css.mainContent}>
         <div className={css.profileCard}>
           <div className={css.header}>
@@ -41,11 +36,11 @@ export default async function ProfilePage() {
         </div>
       </main>
     );
-  } catch (error) {
+  } catch (err) {
     return (
       <main className={css.mainContent}>
         <div className={css.profileCard}>
-          <p>Unable to load profile. Please sign in again.</p>
+          <p>Unable to load profile. Try signing in.</p>
         </div>
       </main>
     );

@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import { checkSession, getMe } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
@@ -22,12 +21,8 @@ export default function AuthProvider({
       try {
         const session = await checkSession();
         if (session && mounted) {
-          try {
-            const me = await getMe();
-            setUser(me);
-          } catch {
-            setUser(null);
-          }
+          const me = await getMe();
+          setUser(me);
         } else {
           clearIsAuthenticated();
         }
@@ -37,7 +32,6 @@ export default function AuthProvider({
         if (mounted) setLoading(false);
       }
     };
-
     init();
     return () => {
       mounted = false;
