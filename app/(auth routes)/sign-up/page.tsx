@@ -1,28 +1,28 @@
 "use client";
-import { useState } from "react";
-import { register, getMe } from "@/lib/api/clientApi";
+import React, { useState } from "react";
+import css from "./SignUpPage.module.css";
+import { register } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useRouter } from "next/navigation";
-import css from "./SignUpPage.module.css";
 
 export default function SignUpPage() {
-  const [error, setError] = useState("");
   const setUser = useAuthStore((s) => s.setUser);
+  const [error, setError] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    const data = new FormData(form);
-    const email = String(data.get("email") || "");
-    const password = String(data.get("password") || "");
+    const fd = new FormData(e.currentTarget);
+    const email = String(fd.get("email") ?? "");
+    const password = String(fd.get("password") ?? "");
     try {
-      await register(email, password);
-      const me = await getMe();
-      setUser(me);
+      const user = await register(email, password);
+      setUser(user);
       router.push("/profile");
     } catch (err: any) {
-      setError(err?.response?.data?.error || "Registration failed");
+      setError(
+        err?.response?.data?.message ?? err?.message ?? "Registration failed"
+      );
     }
   };
 
@@ -34,27 +34,30 @@ export default function SignUpPage() {
           <label htmlFor="email">Email</label>
           <input
             id="email"
-            name="email"
             type="email"
+            name="email"
             className={css.input}
             required
           />
         </div>
+
         <div className={css.formGroup}>
           <label htmlFor="password">Password</label>
           <input
             id="password"
-            name="password"
             type="password"
+            name="password"
             className={css.input}
             required
           />
         </div>
+
         <div className={css.actions}>
           <button type="submit" className={css.submitButton}>
             Register
           </button>
         </div>
+
         <p className={css.error}>{error}</p>
       </form>
     </main>

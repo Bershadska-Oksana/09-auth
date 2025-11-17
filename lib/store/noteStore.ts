@@ -1,20 +1,19 @@
 import { create } from "zustand";
 
-interface Note {
-  id: string;
+interface Draft {
   title: string;
   content: string;
   tag: string;
 }
 
 interface NoteStore {
-  notes: Note[];
-  setNotes: (notes: Note[]) => void;
-  addNote: (note: Note) => void;
+  draft: Draft;
+  setDraft: (d: Partial<Draft>) => void;
+  clearDraft: () => void;
 }
 
 export const useNoteStore = create<NoteStore>((set) => ({
-  notes: [],
-  setNotes: (notes) => set({ notes }),
-  addNote: (note) => set((state) => ({ notes: [...state.notes, note] })),
+  draft: { title: "", content: "", tag: "Todo" },
+  setDraft: (d) => set((s) => ({ draft: { ...s.draft, ...d } })),
+  clearDraft: () => set({ draft: { title: "", content: "", tag: "Todo" } }),
 }));

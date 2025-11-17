@@ -1,27 +1,26 @@
 "use client";
-
 import React from "react";
-import css from "./NoteDetails.module.css";
-import { useNoteStore } from "@/lib/store/noteStore";
-import { createNote } from "@/lib/api/notes";
+import { useQuery } from "@tanstack/react-query";
+import { fetchNoteById } from "@/lib/api/clientApi";
 
-interface NoteDetailsProps {
-  noteId: string;
-}
+export default function NoteDetails({ id }: { id: string }) {
+  const {
+    data: note,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["note", id],
+    queryFn: () => fetchNoteById(id),
+  });
 
-const NoteDetails = ({ noteId }: NoteDetailsProps) => {
-  const { notes } = useNoteStore();
-  const note = notes.find((n) => n.id === noteId);
-
-  if (!note) return <p>Note not found</p>;
+  if (isLoading) return <p>Loading...</p>;
+  if (error || !note) return <p>Note not found.</p>;
 
   return (
-    <div className={css.noteDetails}>
-      <h2>{note.title}</h2>
+    <article>
+      <h1>{note.title}</h1>
       <p>{note.content}</p>
       <p>Tag: {note.tag}</p>
-    </div>
+    </article>
   );
-};
-
-export default NoteDetails;
+}

@@ -1,79 +1,84 @@
-import axios, { isAxiosError } from "axios";
+import { api } from "./api";
+import axios, { AxiosInstance, isAxiosError } from "axios";
 import { cookies, type RequestCookies } from "next/headers";
+import { User } from "@/types/user";
+import { Note } from "@/types/note";
 
-const apiBase =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000/api";
-
-const serverClient = (cookieStore?: RequestCookies) => {
-  const cookieHeader = cookieStore
-    ? cookieStore
-        .getAll()
-        .map((c) => `${c.name}=${c.value}`)
-        .join("; ")
-    : "";
-
+const serverRequest = (cookieHeader?: string): AxiosInstance => {
   return axios.create({
-    baseURL: apiBase,
+    baseURL:
+      (process.env.NEXT_PUBLIC_API_BASE_URL ??
+        process.env.NEXT_PUBLIC_API_URL ??
+        "http://localhost:3000") + "/api",
     withCredentials: true,
     headers: {
       "Content-Type": "application/json",
-      Cookie: cookieHeader,
+      ...(cookieHeader ? { Cookie: cookieHeader } : {}),
     },
   });
 };
 
-/* ================================
-   USER: /users/me
-================================ */
-export async function serverGetMe() {
+function cookieHeaderFromStore(cookieStore?: RequestCookies) {
+  if (!cookieStore) return "";
+  return cookieStore
+    .getAll()
+    .map((c) => `${c.name}=${c.value}`)
+    .join("; ");
+}
+
+export const serverCheckSession = async () => {
   try {
     const cookieStore = cookies();
-    const client = serverClient(cookieStore);
+    const cookieHeader = cookieHeaderFromStore(cookieStore);
+    const client = serverRequest(cookieHeader);
+    const res = await client.get("/auth/session");
+    return res; // return full AxiosResponse when needed
+  } catch (err) {
+    return null;
+  }
+};
+
+export const serverGetMe = async (): Promise<User | null> => {
+  try {
+    const cookieStore = cookies();
+    const cookieHeader = cookieHeaderFromStore(cookieStore);
+    const client = serverRequest(cookieHeader);
     const res = await client.get("/users/me");
-    return res.data;
+    return res.data as User;
   } catch (err) {
     if (isAxiosError(err) && err.response?.status === 401) return null;
     console.error("serverGetMe error:", err);
     return null;
   }
-}
+};
 
-/* ================================
-   NOTES
-================================ */
-export async function serverGetNotes() {
+export const serverGetNotes = async (params?: {
+  search?: string;
+  page?: number;
+  perPage?: number;
+  tag?: string;
+}) => {
   try {
     const cookieStore = cookies();
-    const client = serverClient(cookieStore);
-    const res = await client.get("/notes");
-    return res.data;
+    const cookieHeader = cookieHeaderFromStore(cookieStore);
+    const client = serverRequest(cookieHeader);
+    const res = await client.get("/notes", { params });
+    return res.data as Note[];
   } catch (err) {
     console.error("serverGetNotes error:", err);
-    return null;
+    return [];
   }
-}
+};
 
-export async function serverGetNoteById(id: string) {
+export const serverGetNoteById = async (id: string) => {
   try {
     const cookieStore = cookies();
-    const client = serverClient(cookieStore);
+    const cookieHeader = cookieHeaderFromStore(cookieStore);
+    const client = serverRequest(cookieHeader);
     const res = await client.get(`/notes/${id}`);
-    return res.data;
+    return res.data as Note;
   } catch (err) {
     console.error("serverGetNoteById error:", err);
     return null;
   }
-}
-
-/* ================================
-   SESSION CHECK (для middleware)
-================================ */
-export async function serverCheckSession(cookieStore: RequestCookies) {
-  try {
-    const client = serverClient(cookieStore);
-    const res = await client.get("/auth/refresh");
-    return res.data;
-  } catch (err) {
-    return null;
-  }
-}
+};

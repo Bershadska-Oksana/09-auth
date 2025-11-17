@@ -6,27 +6,41 @@ const PRIVATE_ROUTES = ["/profile/:path*", "/notes/:path*"];
 const AUTH_ROUTES = ["/sign-in", "/sign-up"];
 
 export async function middleware(req: NextRequest) {
-  const url = req.nextUrl.clone();
+  const { pathname } = req.nextUrl;
 
-  const accessToken = req.cookies.get("accessToken")?.value;
-  const refreshToken = req.cookies.get("refreshToken")?.value;
-
-  const isPrivateRoute = PRIVATE_ROUTES.some((route) =>
-    new RegExp(`^${route.replace(":path*", ".*")}$`).test(url.pathname)
-  );
-  const isAuthRoute = AUTH_ROUTES.includes(url.pathname);
-
-  const user = await serverCheckSession(accessToken, refreshToken);
-
-  if (isPrivateRoute && !user) {
-    url.pathname = "/sign-in";
-    return NextResponse.redirect(url);
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/static") ||
+    pathname.includes(".")
+  ) {
+    return NextResponse.next();
   }
 
-  if (isAuthRoute && user) {
-    url.pathname = "/profile";
-    return NextResponse.redirect(url);
-  }
+  try {
+    const sessionRes = await serverCheckSession();
+
+    const isAuthenticated = Boolean(
+      sessionRes && sessionRes.status === 200 && sessionRes.data
+    );
+
+    if (
+      !isAuthenticated &&
+      (pathname.startsWith("/profile") || pathname.startsWith("/notes"))
+    ) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/sign-in";
+      return NextResponse.redirect(url);
+    }
+
+    if (
+      isAuthenticated &&
+      (pathname === "/sign-in" || pathname === "/sign-up")
+    ) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+  } catch (err) {}
 
   return NextResponse.next();
 }

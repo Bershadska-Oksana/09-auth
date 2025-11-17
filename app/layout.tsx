@@ -1,27 +1,49 @@
-// app/layout.tsx
 import "./globals.css";
-import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
-import AuthProvider from "@/components/AuthProvider/AuthProvider";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
+import { Roboto } from "next/font/google";
+import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
+import AuthProvider from "@/components/AuthProvider/AuthProvider";
+import type { Metadata } from "next";
+import React from "react";
 
-export const metadata = {
+const roboto = Roboto({
+  weight: ["400", "500", "700"],
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-roboto",
+});
+
+export const metadata: Metadata = {
   title: "NoteHub",
-  description: "NoteHub app",
+  description: "A simple and efficient note-taking app",
+  openGraph: {
+    title: "NoteHub",
+    description: "A simple and efficient note-taking app",
+    url: "https://your-vercel-app.vercel.app",
+    images: [
+      {
+        url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
   children,
+  modal,
 }: {
   children: React.ReactNode;
+  modal?: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={roboto.variable}>
       <body>
         <TanStackProvider>
           <AuthProvider>
             <Header />
-            <main>{children}</main>
+            {children}
+            {modal}
             <Footer />
           </AuthProvider>
         </TanStackProvider>

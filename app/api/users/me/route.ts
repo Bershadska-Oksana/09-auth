@@ -1,62 +1,26 @@
-export const dynamic = "force-dynamic";
-
+import { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { api } from "../../api";
-import { cookies } from "next/headers";
-function logErrorResponse(data: any) {
-  console.error("API Error:", data);
-}
+import { api } from "@/lib/api/api";
 import { isAxiosError } from "axios";
+import { logErrorResponse } from "../../_utils/utils";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const cookieStore = await cookies();
-
-    const res = await api.get("/users/me", {
-      headers: {
-        Cookie: cookieStore.toString(),
-      },
-    });
+    const res = await api.get("/users/me");
     return NextResponse.json(res.data, { status: res.status });
-  } catch (error) {
-    if (isAxiosError(error)) {
-      logErrorResponse(error.response?.data);
-      return NextResponse.json(
-        { error: error.message, response: error.response?.data },
-        { status: error.status }
-      );
-    }
-    logErrorResponse({ message: (error as Error).message });
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+  } catch (err) {
+    if (isAxiosError(err)) return logErrorResponse(err);
+    return logErrorResponse(err);
   }
 }
 
-export async function PATCH(request: Request) {
+export async function PATCH(req: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const body = await request.json();
-
-    const res = await api.patch("/users/me", body, {
-      headers: {
-        Cookie: cookieStore.toString(),
-      },
-    });
+    const body = await req.json();
+    const res = await api.patch("/users/me", body);
     return NextResponse.json(res.data, { status: res.status });
-  } catch (error) {
-    if (isAxiosError(error)) {
-      logErrorResponse(error.response?.data);
-      return NextResponse.json(
-        { error: error.message, response: error.response?.data },
-        { status: error.status }
-      );
-    }
-    logErrorResponse({ message: (error as Error).message });
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+  } catch (err) {
+    if (isAxiosError(err)) return logErrorResponse(err);
+    return logErrorResponse(err);
   }
 }

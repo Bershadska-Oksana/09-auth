@@ -1,13 +1,13 @@
-import { NextConfig } from "next";
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  experimental: {},
   images: {
     remotePatterns: [
       {
         protocol: "https",
         hostname: "ac.goit.global",
-        port: "",
         pathname: "/**",
       },
     ],
