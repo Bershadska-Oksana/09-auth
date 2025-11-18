@@ -2,11 +2,15 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { serverCheckSession } from "./lib/api/serverApi";
 
-const PRIVATE_ROUTES = ["/profile", "/notes"];
-const AUTH_ROUTES = ["/sign-in", "/sign-up"];
-
 export const config = {
-  matcher: [...PRIVATE_ROUTES, ...AUTH_ROUTES],
+  matcher: [
+    "/profile",
+    "/profile/:path*",
+    "/notes",
+    "/notes/:path*",
+    "/sign-in",
+    "/sign-up",
+  ],
 };
 
 export default async function middleware(req: NextRequest) {
@@ -14,8 +18,15 @@ export default async function middleware(req: NextRequest) {
 
   const sessionRes = await serverCheckSession();
 
-  const isAuthRoute = AUTH_ROUTES.some((r) => pathname.startsWith(r));
-  const isPrivateRoute = PRIVATE_ROUTES.some((r) => pathname.startsWith(r));
+  const isAuthRoute = ["/sign-in", "/sign-up"].some((r) =>
+    pathname.startsWith(r)
+  );
+  const isPrivateRoute = [
+    "/profile",
+    "/profile/:path*",
+    "/notes",
+    "/notes/:path*",
+  ].some((r) => pathname.startsWith(r.replace("/:path*", "")));
 
   const isAuthenticated = Boolean(sessionRes && sessionRes.status === 200);
 
