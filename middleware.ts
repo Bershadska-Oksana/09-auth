@@ -1,28 +1,37 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { serverRequest } from "@/lib/api/serverApi";
+import { serverCheckSession } from "./lib/api/serverApi";
 
-export async function middleware(req: NextRequest) {
-  const accessToken = req.cookies.get("accessToken")?.value;
-  const refreshToken = req.cookies.get("refreshToken")?.value;
+const PRIVATE_ROUTES = ["/profile/:path*", "/notes/:path*"];
+const AUTH_ROUTES = ["/sign-in", "/sign-up"];
 
-  if (!accessToken && refreshToken) {
-    const newTokens = await serverRequest("/auth/session");
-    if (newTokens?.accessToken) {
-      const res = NextResponse.next();
-      res.cookies.set("accessToken", newTokens.accessToken);
-      res.cookies.set("refreshToken", newTokens.refreshToken);
-      return res;
-    }
+export const config = {
+  matcher: [...PRIVATE_ROUTES, ...AUTH_ROUTES],
+};
+
+export default async function middleware(req: NextRequest) {
+  const pathname = req.nextUrl.pathname;
+
+  const sessionRes = await serverCheckSession();
+
+  const isAuthRoute = AUTH_ROUTES.some((r) => {
+    const base = r.replace("/:path*", "");
+    return pathname.startsWith(base);
+  });
+  const isPrivateRoute = PRIVATE_ROUTES.some((r) => {
+    const base = r.replace("/:path*", "");
+    return pathname.startsWith(base);
+  });
+
+  const isAuthenticated = Boolean(sessionRes && sessionRes.status === 200);
+
+  if (isAuthenticated && isAuthRoute) {
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
-  if (!accessToken && !refreshToken) {
+  if (!isAuthenticated && isPrivateRoute) {
     return NextResponse.redirect(new URL("/sign-in", req.url));
   }
 
   return NextResponse.next();
 }
-
-export const config = {
-  matcher: ["/(private routes)/:path*"],
-};

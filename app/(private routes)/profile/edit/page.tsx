@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import css from "./EditProfilePage.module.css";
 import Image from "next/image";
@@ -10,20 +11,25 @@ export default function EditProfilePage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [avatar, setAvatar] = useState("");
+
   const setUser = useAuthStore((s) => s.setUser);
   const router = useRouter();
 
   useEffect(() => {
     let mounted = true;
+
     (async () => {
       try {
         const me = await getMe();
+
         if (!mounted) return;
+
         setUsername(me.username);
         setEmail(me.email);
         setAvatar(me.avatar || "");
       } catch {}
     })();
+
     return () => {
       mounted = false;
     };
@@ -31,11 +37,13 @@ export default function EditProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
       const updated = await updateMe({ username });
+
       setUser(updated);
       router.push("/profile");
-    } catch (err) {}
+    } catch {}
   };
 
   return (
@@ -71,6 +79,7 @@ export default function EditProfilePage() {
             <button type="submit" className={css.saveButton}>
               Save
             </button>
+
             <button
               type="button"
               className={css.cancelButton}

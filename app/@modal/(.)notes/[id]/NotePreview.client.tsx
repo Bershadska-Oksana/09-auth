@@ -1,55 +1,30 @@
 "use client";
-
-import { useRouter } from "next/navigation";
-import css from "./NotePreview.module.css";
-import { useQuery } from "@tanstack/react-query";
-import { fetchNoteById } from "@/lib/api/clientApi";
-import Modal from "@/components/Modal/Modal";
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getNoteById } from "@/lib/api/clientApi";
+import Modal from "@/components/Modal/Modal";
+import css from "./NotePreview.module.css";
 
-export default function NotePreview({
-  id,
-}: {
+interface Props {
   id: string;
-  dehydratedState?: any;
-}) {
-  const router = useRouter();
-  const {
-    data: note,
-    isLoading,
-    error,
-  } = useQuery({
+  onClose: () => void;
+}
+
+export default function NotePreviewClient({ id, onClose }: Props) {
+  const { data: note, isLoading } = useQuery({
     queryKey: ["note", id],
-    queryFn: () => fetchNoteById(id),
-    refetchOnMount: false,
+    queryFn: () => getNoteById(id),
   });
 
-  if (isLoading) return <p>Loading...</p>;
-  if (error || !note) return <p>Something went wrong.</p>;
-
-  const formattedDate = new Date(note.createdAt).toLocaleString("uk-UA", {
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  if (isLoading) return <div>Loading...</div>;
+  if (!note) return <div>Not found</div>;
 
   return (
-    <Modal onClose={() => router.back()}>
-      <div className={css.container}>
-        <div className={css.item}>
-          <div className={css.header}>
-            <h2>{note.title}</h2>
-          </div>
-          <p className={css.content}>{note.content}</p>
-          <p className={css.date}>{formattedDate}</p>
-        </div>
-        <span className={css.tag}>{note.tag}</span>
+    <Modal onClose={onClose}>
+      <div className={css.preview}>
+        <h2>{note.title}</h2>
+        <p>{note.content}</p>
       </div>
-      <button onClick={() => router.back()} className={css.backBtn}>
-        Close
-      </button>
     </Modal>
   );
 }

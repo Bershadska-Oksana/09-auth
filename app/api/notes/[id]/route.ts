@@ -1,43 +1,59 @@
 import { NextRequest, NextResponse } from "next/server";
 import { api } from "@/lib/api/api";
 import { cookies } from "next/headers";
+import { isAxiosError } from "axios";
+import { logErrorResponse } from "../../_utils/utils";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+type Props = { params: { id: string } };
+
+export async function GET(req: NextRequest, { params }: Props) {
   try {
     const cookieStore = cookies();
-    const session = cookieStore.get("session");
-
+    const cookieHeader = cookieStore
+      .getAll()
+      .map((c) => `${c.name}=${c.value}`)
+      .join("; ");
     const res = await api.get(`/notes/${params.id}`, {
-      headers: {
-        Cookie: `session=${session?.value || ""}`,
-      },
+      headers: { Cookie: cookieHeader },
     });
-
-    return NextResponse.json(res.data);
-  } catch {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json(res.data, { status: res.status });
+  } catch (err) {
+    if (isAxiosError(err)) return logErrorResponse(err);
+    return logErrorResponse(err);
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest, { params }: Props) {
   try {
     const cookieStore = cookies();
-    const session = cookieStore.get("session");
-
+    const cookieHeader = cookieStore
+      .getAll()
+      .map((c) => `${c.name}=${c.value}`)
+      .join("; ");
     const res = await api.delete(`/notes/${params.id}`, {
-      headers: {
-        Cookie: `session=${session?.value || ""}`,
-      },
+      headers: { Cookie: cookieHeader },
     });
+    return NextResponse.json(res.data, { status: res.status });
+  } catch (err) {
+    if (isAxiosError(err)) return logErrorResponse(err);
+    return logErrorResponse(err);
+  }
+}
 
-    return NextResponse.json(res.data);
-  } catch {
-    return NextResponse.json({ error: "Delete failed" }, { status: 400 });
+export async function PATCH(req: NextRequest, { params }: Props) {
+  try {
+    const body = await req.json();
+    const cookieStore = cookies();
+    const cookieHeader = cookieStore
+      .getAll()
+      .map((c) => `${c.name}=${c.value}`)
+      .join("; ");
+    const res = await api.patch(`/notes/${params.id}`, body, {
+      headers: { Cookie: cookieHeader },
+    });
+    return NextResponse.json(res.data, { status: res.status });
+  } catch (err) {
+    if (isAxiosError(err)) return logErrorResponse(err);
+    return logErrorResponse(err);
   }
 }
