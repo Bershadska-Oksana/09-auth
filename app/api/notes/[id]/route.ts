@@ -4,18 +4,22 @@ import { cookies } from "next/headers";
 import { isAxiosError } from "axios";
 import { logErrorResponse } from "../../_utils/utils";
 
-type Props = { params: { id: string } };
+interface Params {
+  id: string;
+}
 
-export async function GET(req: NextRequest, { params }: Props) {
+export async function GET(req: NextRequest, { params }: { params: Params }) {
   try {
     const cookieStore = cookies();
     const cookieHeader = cookieStore
       .getAll()
       .map((c) => `${c.name}=${c.value}`)
       .join("; ");
+
     const res = await api.get(`/notes/${params.id}`, {
       headers: { Cookie: cookieHeader },
     });
+
     return NextResponse.json(res.data, { status: res.status });
   } catch (err) {
     if (isAxiosError(err)) return logErrorResponse(err);
@@ -23,16 +27,18 @@ export async function GET(req: NextRequest, { params }: Props) {
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: Props) {
+export async function DELETE(req: NextRequest, { params }: { params: Params }) {
   try {
     const cookieStore = cookies();
     const cookieHeader = cookieStore
       .getAll()
       .map((c) => `${c.name}=${c.value}`)
       .join("; ");
+
     const res = await api.delete(`/notes/${params.id}`, {
       headers: { Cookie: cookieHeader },
     });
+
     return NextResponse.json(res.data, { status: res.status });
   } catch (err) {
     if (isAxiosError(err)) return logErrorResponse(err);
@@ -40,7 +46,7 @@ export async function DELETE(req: NextRequest, { params }: Props) {
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: Props) {
+export async function PATCH(req: NextRequest, { params }: { params: Params }) {
   try {
     const body = await req.json();
     const cookieStore = cookies();
@@ -48,9 +54,11 @@ export async function PATCH(req: NextRequest, { params }: Props) {
       .getAll()
       .map((c) => `${c.name}=${c.value}`)
       .join("; ");
+
     const res = await api.patch(`/notes/${params.id}`, body, {
       headers: { Cookie: cookieHeader },
     });
+
     return NextResponse.json(res.data, { status: res.status });
   } catch (err) {
     if (isAxiosError(err)) return logErrorResponse(err);
