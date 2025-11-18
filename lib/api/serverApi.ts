@@ -1,11 +1,11 @@
 import { api } from "./api";
-import { cookies, type RequestCookies } from "next/headers";
+import { cookies } from "next/headers";
 import type { User } from "@/types/user";
 import type { Note } from "@/types/note";
 import { isAxiosError } from "axios";
 
-function cookieHeaderFromStore(cookieStore?: RequestCookies) {
-  if (!cookieStore) return "";
+function cookieHeaderFromStore() {
+  const cookieStore = cookies();
   return cookieStore
     .getAll()
     .map((c) => `${c.name}=${c.value}`)
@@ -14,23 +14,19 @@ function cookieHeaderFromStore(cookieStore?: RequestCookies) {
 
 export const serverCheckSession = async () => {
   try {
-    const cookieStore = cookies();
-    const cookieHeader = cookieHeaderFromStore(cookieStore);
     const res = await api.get("/auth/session", {
-      headers: { Cookie: cookieHeader },
+      headers: { Cookie: cookieHeaderFromStore() },
     });
     return res;
-  } catch (err) {
+  } catch {
     return null;
   }
 };
 
 export const serverGetMe = async (): Promise<User | null> => {
   try {
-    const cookieStore = cookies();
-    const cookieHeader = cookieHeaderFromStore(cookieStore);
     const res = await api.get("/users/me", {
-      headers: { Cookie: cookieHeader },
+      headers: { Cookie: cookieHeaderFromStore() },
     });
     return res.data as User;
   } catch (err) {
@@ -47,11 +43,9 @@ export const serverGetNotes = async (params?: {
   tag?: string;
 }) => {
   try {
-    const cookieStore = cookies();
-    const cookieHeader = cookieHeaderFromStore(cookieStore);
     const res = await api.get("/notes", {
       params,
-      headers: { Cookie: cookieHeader },
+      headers: { Cookie: cookieHeaderFromStore() },
     });
     return res.data as { items: Note[]; total?: number };
   } catch (err) {
@@ -62,10 +56,8 @@ export const serverGetNotes = async (params?: {
 
 export const serverGetNoteById = async (id: string) => {
   try {
-    const cookieStore = cookies();
-    const cookieHeader = cookieHeaderFromStore(cookieStore);
     const res = await api.get(`/notes/${id}`, {
-      headers: { Cookie: cookieHeader },
+      headers: { Cookie: cookieHeaderFromStore() },
     });
     return res.data as Note;
   } catch (err) {
