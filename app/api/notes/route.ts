@@ -1,41 +1,51 @@
-// app/api/notes/route.ts
-import { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { api } from "@/lib/api/api";
-import { isAxiosError } from "axios";
-import { logErrorResponse } from "../_utils/utils";
+import { cookies } from "next/headers";
 
 export async function GET(req: NextRequest) {
   try {
-    const url = new URL(req.url);
-    const search = url.searchParams.get("search") ?? undefined;
-    const page = url.searchParams.get("page") ?? undefined;
-    const perPage = url.searchParams.get("perPage") ?? undefined;
-    const tag = url.searchParams.get("tag") ?? undefined;
+    const { searchParams } = new URL(req.url);
+    const page = Number(searchParams.get("page") || 1);
+    const perPage = Number(searchParams.get("perPage") || 12);
+    let tag = searchParams.get("tag") || "";
+    if (tag === "All") tag = "";
+
+    const cookieStore = cookies();
+    const cookieHeader = cookieStore
+      .getAll()
+      .map((c) => `${c.name}=${c.value}`)
+      .join("; ");
 
     const res = await api.get("/notes", {
-      params: {
-        ...(search ? { search } : {}),
-        ...(page ? { page: Number(page) } : {}),
-        ...(perPage ? { perPage: Number(perPage) } : {}),
-        ...(tag ? { tag } : {}),
-      },
+      params: { search: searchParams.get("search") || "", page, perPage, tag },
+      headers: { Cookie: cookieHeader },
     });
-
-    return NextResponse.json(res.data, { status: res.status });
-  } catch (err) {
-    if (isAxiosError(err)) return logErrorResponse(err);
-    return logErrorResponse(err);
+    return NextResponse.json(res.data, { status: 200 });
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err?.response?.data?.message || err.message },
+      { status: 400 }
+    );
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const res = await api.post("/notes", body);
-    return NextResponse.json(res.data, { status: res.status });
-  } catch (err) {
-    if (isAxiosError(err)) return logErrorResponse(err);
-    return logErrorResponse(err);
+    const cookieStore = cookies();
+    const cookieHeader = cookieStore
+      .getAll()
+      .map((c) => `${c.name}=${c.value}`)
+      .join("; ");
+
+    const res = await api.post("/notes", body, {
+      headers: { Cookie: cookieHeader },
+    });
+    return NextResponse.json(res.data, { status: 201 });
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err?.response?.data?.message || err.message },
+      { status: 400 }
+    );
   }
 }

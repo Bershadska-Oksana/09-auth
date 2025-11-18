@@ -1,65 +1,43 @@
-import { api } from "./api";
-import { User } from "@/types/user";
-import { Note } from "@/types/note";
+"use client";
 
-type FetchNotesParams = {
-  search?: string;
-  page?: number;
-  perPage?: number;
-  tag?: string;
-};
+import axios from "axios";
 
-export async function register(email: string, password: string) {
-  const res = await api.post("/auth/register", { email, password });
-  return res.data as User;
+export async function register(body: any) {
+  return axios.post("/api/auth/register", body);
 }
 
-export async function login(email: string, password: string) {
-  const res = await api.post("/auth/login", { email, password });
-  return res.data as User;
+export async function login(body: any) {
+  return axios.post("/api/auth/login", body);
 }
 
 export async function logout() {
-  const res = await api.post("/auth/logout");
-  return res.data;
+  return axios.post("/api/auth/logout");
 }
 
 export async function checkSession() {
-  const res = await api.get("/auth/session");
-  return res.data as User | null;
+  return axios.get("/api/auth/session");
 }
 
 export async function getMe() {
-  const res = await api.get("/users/me");
-  return res.data as User;
+  return axios.get("/api/users/me");
 }
 
-export async function updateMe(data: Partial<User>) {
-  const res = await api.patch("/users/me", data);
-  return res.data as User;
+export async function getNotes(params?: any) {
+  return axios.get("/api/notes", { params });
 }
 
-/* NOTES */
-export async function fetchNotes(params?: FetchNotesParams) {
-  const res = await api.get("/notes", { params });
-  return res.data as Note[];
+export async function getNoteById(id: string) {
+  return axios.get(`/api/notes/${id}`);
 }
 
-export async function fetchNoteById(id: string) {
-  const res = await api.get(`/notes/${id}`);
-  return res.data as Note;
+export async function createNote(body: any) {
+  return axios.post("/api/notes", body);
 }
 
-export async function createNote(payload: {
-  title: string;
-  content: string;
-  tag: string;
-}) {
-  const res = await api.post("/notes", payload);
-  return res.data as Note;
+export async function updateNote(id: string, body: any) {
+  return axios.put(`/api/notes/${id}`, body);
 }
 
 export async function deleteNote(id: string) {
-  const res = await api.delete(`/notes/${id}`);
-  return res.data;
+  return axios.delete(`/api/notes/${id}`);
 }

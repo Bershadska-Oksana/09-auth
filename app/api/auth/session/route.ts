@@ -1,14 +1,26 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { api } from "@/lib/api/api";
-import { isAxiosError } from "axios";
-import { logErrorResponse } from "../../_utils/utils";
+import { cookies } from "next/headers";
 
 export async function GET(req: NextRequest) {
   try {
-    const res = await api.get("/auth/session");
-    return NextResponse.json(res.data, { status: res.status });
-  } catch (err) {
-    if (isAxiosError(err)) return logErrorResponse(err);
-    return logErrorResponse(err);
+    const cookieStore = cookies();
+    const cookieHeader = cookieStore
+      .getAll()
+      .map((c) => `${c.name}=${c.value}`)
+      .join("; ");
+    const res = await api.get("/auth/session", {
+      headers: { Cookie: cookieHeader },
+    });
+
+    return NextResponse.json(
+      { success: true, user: res.data },
+      { status: 200 }
+    );
+  } catch (err: any) {
+    return NextResponse.json(
+      { success: false, error: err?.response?.data?.message || err.message },
+      { status: 401 }
+    );
   }
 }

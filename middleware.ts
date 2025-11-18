@@ -1,50 +1,28 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { serverCheckSession } from "./lib/api/serverApi";
-
-const PRIVATE_ROUTES = ["/profile/:path*", "/notes/:path*"];
-const AUTH_ROUTES = ["/sign-in", "/sign-up"];
+import { serverRequest } from "@/lib/api/serverApi";
 
 export async function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+  const accessToken = req.cookies.get("accessToken")?.value;
+  const refreshToken = req.cookies.get("refreshToken")?.value;
 
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/static") ||
-    pathname.includes(".")
-  ) {
-    return NextResponse.next();
+  if (!accessToken && refreshToken) {
+    const newTokens = await serverRequest("/auth/session");
+    if (newTokens?.accessToken) {
+      const res = NextResponse.next();
+      res.cookies.set("accessToken", newTokens.accessToken);
+      res.cookies.set("refreshToken", newTokens.refreshToken);
+      return res;
+    }
   }
 
-  try {
-    const sessionRes = await serverCheckSession();
-
-    const isAuthenticated = Boolean(
-      sessionRes && sessionRes.status === 200 && sessionRes.data
-    );
-
-    if (
-      !isAuthenticated &&
-      (pathname.startsWith("/profile") || pathname.startsWith("/notes"))
-    ) {
-      const url = req.nextUrl.clone();
-      url.pathname = "/sign-in";
-      return NextResponse.redirect(url);
-    }
-
-    if (
-      isAuthenticated &&
-      (pathname === "/sign-in" || pathname === "/sign-up")
-    ) {
-      const url = req.nextUrl.clone();
-      url.pathname = "/";
-      return NextResponse.redirect(url);
-    }
-  } catch (err) {}
+  if (!accessToken && !refreshToken) {
+    return NextResponse.redirect(new URL("/sign-in", req.url));
+  }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/profile/:path*", "/notes/:path*", "/sign-in", "/sign-up"],
+  matcher: ["/(private routes)/:path*"],
 };

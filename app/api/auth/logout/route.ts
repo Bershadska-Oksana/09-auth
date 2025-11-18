@@ -1,27 +1,27 @@
-import { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { api } from "@/lib/api/api";
-import { isAxiosError } from "axios";
-import { logErrorResponse } from "../../_utils/utils";
+import { cookies } from "next/headers";
 
 export async function POST(req: NextRequest) {
   try {
-    const res = await api.post("/auth/logout");
+    const cookieStore = cookies();
+    const cookieHeader = cookieStore
+      .getAll()
+      .map((c) => `${c.name}=${c.value}`)
+      .join("; ");
+    const res = await api.post(
+      "/auth/logout",
+      {},
+      { headers: { Cookie: cookieHeader } }
+    );
 
-    const setCookieHeader = res.headers["set-cookie"];
-    const response = NextResponse.json({}, { status: res.status });
-    if (setCookieHeader) {
-      const cookiesArray = Array.isArray(setCookieHeader)
-        ? setCookieHeader
-        : [setCookieHeader];
-      for (const c of cookiesArray) {
-        response.headers.append("set-cookie", c);
-      }
-    }
+    res.headers["set-cookie"]?.forEach((c: string) => cookieStore.set(c));
 
-    return response;
-  } catch (err) {
-    if (isAxiosError(err)) return logErrorResponse(err);
-    return logErrorResponse(err);
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (err: any) {
+    return NextResponse.json(
+      { success: false, error: err?.response?.data?.message || err.message },
+      { status: 400 }
+    );
   }
 }

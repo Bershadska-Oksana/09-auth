@@ -1,30 +1,20 @@
-import { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { api } from "@/lib/api/api";
-import { isAxiosError } from "axios";
-import { logErrorResponse } from "../../_utils/utils";
+import { cookies } from "next/headers";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const res = await api.post("/auth/login", body);
 
-    const setCookieHeader = res.headers["set-cookie"];
-    if (setCookieHeader) {
-      const cookiesArray = Array.isArray(setCookieHeader)
-        ? setCookieHeader
-        : [setCookieHeader];
+    const cookieStore = cookies();
+    res.headers["set-cookie"]?.forEach((c: string) => cookieStore.set(c));
 
-      const response = NextResponse.json(res.data, { status: res.status });
-      for (const c of cookiesArray) {
-        response.headers.append("set-cookie", c);
-      }
-      return response;
-    }
-
-    return NextResponse.json(res.data, { status: res.status });
-  } catch (err) {
-    if (isAxiosError(err)) return logErrorResponse(err);
-    return logErrorResponse(err);
+    return NextResponse.json(res.data, { status: 200 });
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err?.response?.data?.message || err.message },
+      { status: 400 }
+    );
   }
 }
