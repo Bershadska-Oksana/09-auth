@@ -1,26 +1,24 @@
-import { NextRequest, NextResponse } from "next/server";
-import { api } from "@/lib/api/api";
+import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { api } from "@/lib/api/api";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const cookieStore = cookies();
-    const cookieHeader = cookieStore
-      .getAll()
-      .map((c) => `${c.name}=${c.value}`)
-      .join("; ");
+    const session = cookieStore.get("session");
+
+    if (!session) {
+      return NextResponse.json(null, { status: 200 });
+    }
+
     const res = await api.get("/auth/session", {
-      headers: { Cookie: cookieHeader },
+      headers: {
+        Cookie: `session=${session.value}`,
+      },
     });
 
-    return NextResponse.json(
-      { success: true, user: res.data },
-      { status: 200 }
-    );
-  } catch (err: any) {
-    return NextResponse.json(
-      { success: false, error: err?.response?.data?.message || err.message },
-      { status: 401 }
-    );
+    return NextResponse.json(res.data, { status: 200 });
+  } catch {
+    return NextResponse.json(null, { status: 200 });
   }
 }

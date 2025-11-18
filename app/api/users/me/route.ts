@@ -1,26 +1,38 @@
-import { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { api } from "@/lib/api/api";
-import { isAxiosError } from "axios";
-import { logErrorResponse } from "../../_utils/utils";
+import { cookies } from "next/headers";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    const res = await api.get("/users/me");
-    return NextResponse.json(res.data, { status: res.status });
-  } catch (err) {
-    if (isAxiosError(err)) return logErrorResponse(err);
-    return logErrorResponse(err);
+    const cookieStore = cookies();
+    const session = cookieStore.get("session");
+
+    const res = await api.get("/users/me", {
+      headers: {
+        Cookie: `session=${session?.value || ""}`,
+      },
+    });
+
+    return NextResponse.json(res.data);
+  } catch (err: any) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 }
 
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
-    const res = await api.patch("/users/me", body);
-    return NextResponse.json(res.data, { status: res.status });
-  } catch (err) {
-    if (isAxiosError(err)) return logErrorResponse(err);
-    return logErrorResponse(err);
+    const cookieStore = cookies();
+    const session = cookieStore.get("session");
+
+    const res = await api.patch("/users/me", body, {
+      headers: {
+        Cookie: `session=${session?.value || ""}`,
+      },
+    });
+
+    return NextResponse.json(res.data);
+  } catch (err: any) {
+    return NextResponse.json({ error: "Update failed" }, { status: 400 });
   }
 }
