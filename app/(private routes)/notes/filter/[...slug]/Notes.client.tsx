@@ -19,14 +19,14 @@ export default function NotesClient({ initialNotes = [], tag }: Props) {
   const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebounce(search, 300);
 
-  const {
-    data: notes = initialNotes,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data: notesRaw, isLoading } = useQuery({
     queryKey: ["notes", { page, debouncedSearch, tag }],
     queryFn: () => getNotes({ page, search: debouncedSearch, tag }),
   });
+
+  const notes = Array.isArray(notesRaw)
+    ? { items: notesRaw, total: notesRaw.length }
+    : notesRaw;
 
   if (isLoading) return <p>Loading notes...</p>;
   if (error) return <p>Error loading notes.</p>;
