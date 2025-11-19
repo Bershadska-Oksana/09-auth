@@ -6,10 +6,13 @@ import { logErrorResponse } from "../../_utils/utils";
 
 type Params = { id: string };
 
-export async function GET(req: NextRequest, context: { params: Params }) {
+export async function GET(
+  req: NextRequest,
+  context: { params: Promise<Params> | Params }
+) {
   try {
-    const { params } = context;
-    const cookieStore = cookies();
+    const params = (await context.params) as Params;
+    const cookieStore = await cookies();
     const cookieHeader = cookieStore
       .getAll()
       .map((c) => `${c.name}=${c.value}`)
@@ -18,6 +21,7 @@ export async function GET(req: NextRequest, context: { params: Params }) {
     const res = await api.get(`/notes/${params.id}`, {
       headers: { Cookie: cookieHeader },
     });
+
     return NextResponse.json(res.data, { status: res.status });
   } catch (err) {
     if (isAxiosError(err)) return logErrorResponse(err);
@@ -25,10 +29,13 @@ export async function GET(req: NextRequest, context: { params: Params }) {
   }
 }
 
-export async function DELETE(req: NextRequest, context: { params: Params }) {
+export async function DELETE(
+  req: NextRequest,
+  context: { params: Promise<Params> | Params }
+) {
   try {
-    const { params } = context;
-    const cookieStore = cookies();
+    const params = (await context.params) as Params;
+    const cookieStore = await cookies();
     const cookieHeader = cookieStore
       .getAll()
       .map((c) => `${c.name}=${c.value}`)
@@ -37,6 +44,7 @@ export async function DELETE(req: NextRequest, context: { params: Params }) {
     const res = await api.delete(`/notes/${params.id}`, {
       headers: { Cookie: cookieHeader },
     });
+
     return NextResponse.json(res.data, { status: res.status });
   } catch (err) {
     if (isAxiosError(err)) return logErrorResponse(err);
@@ -44,11 +52,14 @@ export async function DELETE(req: NextRequest, context: { params: Params }) {
   }
 }
 
-export async function PATCH(req: NextRequest, context: { params: Params }) {
+export async function PATCH(
+  req: NextRequest,
+  context: { params: Promise<Params> | Params }
+) {
   try {
-    const { params } = context;
+    const params = (await context.params) as Params;
     const body = await req.json();
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const cookieHeader = cookieStore
       .getAll()
       .map((c) => `${c.name}=${c.value}`)
@@ -57,6 +68,7 @@ export async function PATCH(req: NextRequest, context: { params: Params }) {
     const res = await api.patch(`/notes/${params.id}`, body, {
       headers: { Cookie: cookieHeader },
     });
+
     return NextResponse.json(res.data, { status: res.status });
   } catch (err) {
     if (isAxiosError(err)) return logErrorResponse(err);
