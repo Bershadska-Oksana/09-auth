@@ -1,35 +1,39 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import NoteList from "@/components/NoteList/NoteList";
+import { getNotes } from "@/lib/api/clientApi";
 import SearchBox from "@/components/SearchBox/SearchBox";
+import NoteList from "@/components/NoteList/NoteList";
 import Pagination from "@/components/Pagination/Pagination";
 import Link from "next/link";
-import { getNotes } from "@/lib/api/clientApi";
-import { useDebounce } from "use-debounce";
 
-interface Props {
-  initialNotes?: any[];
-  tag?: string;
+interface Note {
+  id: string;
+  title: string;
+  content: string;
+  tag: string;
 }
 
-export default function NotesClient({ initialNotes = [], tag }: Props) {
-  const [page, setPage] = useState(1);
+export default function NotesPage() {
   const [search, setSearch] = useState("");
-  const [debouncedSearch] = useDebounce(search, 300);
+  const [page, setPage] = useState(1);
+  const [tag, setTag] = useState<string | undefined>(undefined);
 
-  const { data: notesRaw, isLoading } = useQuery({
-    queryKey: ["notes", { page, debouncedSearch, tag }],
-    queryFn: () => getNotes({ page, search: debouncedSearch, tag }),
-  });
-
-  const notes = Array.isArray(notesRaw)
-    ? { items: notesRaw, total: notesRaw.length }
-    : notesRaw;
+  const {
+    data: notes,
+    isLoading,
+    isError,
+  } = useQuery(
+    ["notes", { page, search, tag }],
+    () => getNotes({ page, search, tag }),
+    {
+      keepPreviousData: true,
+    }
+  );
 
   if (isLoading) return <p>Loading notes...</p>;
-  if (error) return <p>Error loading notes.</p>;
+  if (isError) return <p>Error loading notes.</p>;
 
   return (
     <div>
@@ -38,17 +42,17 @@ export default function NotesClient({ initialNotes = [], tag }: Props) {
         <Link href="/notes/action/create">Create note</Link>
       </div>
 
-      {notes.items?.length ? (
+      {notes?.items?.length ? (
         <>
           <NoteList notes={notes.items} />
           <Pagination
-            currentPage={page}
-            totalPages={Math.ceil((notes.total || 0) / 10)}
-            onPageChange={setPage}
+            page={page}
+            total={notes.total ?? 0}
+            onChange={(p) => setPage(p)}
           />
         </>
       ) : (
-        <p>No notes found.</p>
+        <p>No notes found</p>
       )}
     </div>
   );
