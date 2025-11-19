@@ -26,7 +26,6 @@ export default function NotesClient({ initialNotes = [], tag }: Props) {
   } = useQuery({
     queryKey: ["notes", { page, debouncedSearch, tag }],
     queryFn: () => getNotes({ page, search: debouncedSearch, tag }),
-    keepPreviousData: true,
   });
 
   if (isLoading) return <p>Loading notes...</p>;
